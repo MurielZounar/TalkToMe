@@ -1,5 +1,8 @@
+import os
+
 from bot.history import create_file, file_exists, write_message
 from bot.translator import get_example, translate_text
+from gtts import gTTS
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -66,3 +69,22 @@ async def translate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=update.effective_chat.id, text=translated_text
     )
+
+
+async def speak(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    id = update.message.from_user.id
+    first_name = update.message.from_user.first_name
+    last_name = update.message.from_user.last_name
+    language = context.args[0]
+    text = " ".join(context.args[1:])
+    tts = gTTS(text, lang=language)
+    file = f"{update.message.from_user.id}.mp3"
+    tts.save(file)
+
+    write_message(id, first_name, last_name, f"Speak {text} in {language}", "Audio")
+
+    await context.bot.send_audio(
+        chat_id=update.effective_chat.id, audio=file, title=f"{language}_speech"
+    )
+
+    os.remove(file)
