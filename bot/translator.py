@@ -4,7 +4,7 @@ from google import genai
 client = genai.Client(api_key=GEMINI_KEY)
 
 
-def translate(english_text: str) -> str:
+def translate_text(english_text: str) -> str:
     response = client.models.generate_content(
         model="gemini-2.0-flash",
         contents=f"""Traduza isto para o português: {english_text}

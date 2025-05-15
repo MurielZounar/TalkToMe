@@ -1,9 +1,17 @@
-from bot.translator import get_example, translate
+from bot.history import create_file, file_exists, write_message
+from bot.translator import get_example, translate_text
 from telegram import Update
 from telegram.ext import ContextTypes
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    id = update.message.from_user.id
+    first_name = update.message.from_user.first_name
+    last_name = update.message.from_user.last_name
+
+    if not file_exists(id, first_name, last_name):
+        create_file(id, first_name, last_name)
+
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="""Olá! 👋🏻
@@ -30,9 +38,14 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def example(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    id = update.message.from_user.id
+    first_name = update.message.from_user.first_name
+    last_name = update.message.from_user.last_name
+
     if len(context.args) == 1:
         word = context.args[0]
         example_text = get_example(word)
+        write_message(id, first_name, last_name, f"Exemplo de {word}", example_text)
     else:
         example_text = (
             "⚠️ Para te dar um exemplo, preciso que você me passe apenas uma palavra!"
@@ -42,8 +55,13 @@ async def example(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def translate(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    id = update.message.from_user.id
+    first_name = update.message.from_user.first_name
+    last_name = update.message.from_user.last_name
     english_text = update.message.text
-    translated_text = translate(english_text)
+    translated_text = translate_text(english_text)
+
+    write_message(id, first_name, last_name, english_text, translated_text)
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id, text=translated_text
